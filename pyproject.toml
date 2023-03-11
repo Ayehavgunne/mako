@@ -1,0 +1,56 @@
+[project]
+name = "Mako"
+dynamic = ["version"]
+description = "A terminal based IDE"
+authors = [
+    {name = "Anthony Post", email = "post.anthony@icloud.com"},
+]
+dependencies = [
+    "textual>=0.14.0",
+    "pyperclip>=1.8.2",
+]
+requires-python = ">=3.11"
+license = {text = "MIT"}
+
+[tool.pdm]
+version = { source = "file", path = "mako/__version__.py"}
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "ruff>=0.0.240",
+    "pytest>=7.2.1",
+    "ufmt>=2.0.1",
+    "pyright>=1.1.296",
+    "textual[dev]>=0.13.0",
+]
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+[tool.pyright]
+exclude = [
+    "__pypackages__",
+]
+extraPaths = ["__pypackages__/3.11/lib"]
+reportMissingModuleSource = false
+reportMissingImports = false
+
+[tool.ruff]
+select = ["ALL"]
+ignore = [
+    "D", "C", "I", "PD", "ANN101", "ANN102", "A003", "EM101", "EM102", "TRY003",
+    "FBT001", "FBT002", "TCH003", "PGH003", "ERA001",
+]
+
+#fixable = []
+#unfixable = []
+
+exclude = [
+    "tests",
+]
+
+[tool.ruff.per-file-ignores]
+
+[tool.black]
+exclude = "__pypackages__"
