@@ -8,6 +8,8 @@ authors = [
 dependencies = [
     "textual>=0.14.0",
     "pyperclip>=1.8.2",
+    "thsl>=0.1.0",
+    "dacite>=1.8.0",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -54,3 +56,4 @@ exclude = [
 
 [tool.black]
 exclude = "__pypackages__"
+preview = true

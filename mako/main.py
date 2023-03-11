@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 from textual.app import App, ComposeResult, CSSPathType
 from textual.widgets import ContentSwitcher, DirectoryTree
 
+from mako.config import config
+
 from mako.editor import Editor
 from mako.logger import mako_logger
 
@@ -36,6 +38,8 @@ class Mako(App):
         super().__init__(driver_class, css_path, watch_css)
         self.bind("ctrl+c", "", description="Copy", show=False)
         self.bind("ctrl+q", "quit", description="Exit Mako", show=False)
+        self.config = config
+        mako_logger.debug(self.config)
 
     def compose(self) -> ComposeResult:
         yield DirectoryTree("./", classes="side_panel", id="dir_tree")
