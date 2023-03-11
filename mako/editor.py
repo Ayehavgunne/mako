@@ -8,12 +8,13 @@ from rich.cells import cell_len, get_character_cell_size
 from rich.syntax import Syntax
 from rich.text import Text
 from rich.traceback import Traceback
-
 from textual.binding import Binding, BindingType
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Static
 
+from mako.config import config
+from mako.formatter import format_doc
 from mako.logger import mako_logger
 
 if TYPE_CHECKING:
@@ -141,7 +142,7 @@ class Editor(Static, can_focus=True):
     async def watch_file_path(self, value: str) -> None:
         if self.styles.auto_dimensions:
             self.refresh(layout=True)
-        mako_logger.debug(f"loaded file {self.file_path.as_posix()}")  # noqa
+        mako_logger.debug(f"loaded file {self.file_path.as_posix()}")  # noqa: G004
         self.value = self.file_path.read_text()
         self.cursor_line = 1
         self.cursor_column = 0
@@ -157,7 +158,9 @@ class Editor(Static, can_focus=True):
         return self._position_to_cell(len(self.value)) + 1
 
     def render(self) -> "RenderableType":
+        # I don't know why assign this to itself, it was just in the textual examples
         self.view_position = self.view_position
+
         if not self.value and self.file_path:
             self.value = self.file_path.read_text()
         if self.file_path is not None:
@@ -172,6 +175,9 @@ class Editor(Static, can_focus=True):
                         self.top_offset + 1,
                         self.top_offset + self.container_viewport.height + 1,
                     ),
+                    code_width=config.languages[
+                        Syntax.guess_lexer(self.file_path.parts[-1])
+                    ].column_width,
                 )
             except Exception:  # noqa
                 return Traceback(width=None)
@@ -397,6 +403,9 @@ class Editor(Static, can_focus=True):
             self.cursor_column = 0
 
     def action_save_file(self) -> None:
+        if config.format_on_save:
+            self.action_format_document()
+
         with self.file_path.open("w") as file_handler:
             file_handler.write(self.value)
 
@@ -405,3 +414,10 @@ class Editor(Static, can_focus=True):
 
     def action_paste(self) -> None:
         self.insert_text_at_cursor(pyperclip.paste())
+
+    def action_format_document(self) -> None:
+        if self.file_path:
+            self.value = format_doc(
+                self.value,
+                config.current_language(self.file_path.parts[-1]).formatter,
+            )

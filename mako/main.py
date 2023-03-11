@@ -43,6 +43,7 @@ class Mako(App):
 
     def compose(self) -> ComposeResult:
         yield DirectoryTree("./", classes="side_panel", id="dir_tree")
+        # with Grid():
         with ContentSwitcher(initial="editor"):
             yield Editor(classes="box", id="editor")
 

@@ -8,8 +8,9 @@ authors = [
 dependencies = [
     "textual>=0.14.0",
     "pyperclip>=1.8.2",
-    "thsl>=0.1.0",
+    "thsl>=0.1.2",
     "dacite>=1.8.0",
+    "git-diff-lines>=0.0.1",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}

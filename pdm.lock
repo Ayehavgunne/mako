@@ -92,6 +92,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "git-diff-lines"
+version = "0.0.1"
+requires_python = ">=3"
+summary = "Get a list of changed lines in git diff."
+
+[[package]]
 name = "idna"
 version = "3.4"
 requires_python = ">=3.5"
@@ -435,7 +441,7 @@ dependencies = [
 
 [[package]]
 name = "thsl"
-version = "0.1.1"
+version = "0.1.2"
 requires_python = ">=3.10"
 summary = "A typed configuration language"
 dependencies = [
@@ -541,7 +547,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.1"
-content_hash = "sha256:4b4e494309e1d2adb2098f2f0154bff66536d5d395c25b774d0d9f8f2d216a53"
+content_hash = "sha256:612daa933ffc602180510a64abcab697defd7e050c314aaece14561b2536a3a6"
 
 [metadata.files]
 "aiohttp 3.8.4" = [
@@ -840,6 +846,10 @@ content_hash = "sha256:4b4e494309e1d2adb2098f2f0154bff66536d5d395c25b774d0d9f8f2
 "ghp-import 2.1.0" = [
     {url = "https://files.pythonhosted.org/packages/d9/29/d40217cbe2f6b1359e00c6c307bb3fc876ba74068cbab3dde77f03ca0dc4/ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343"},
     {url = "https://files.pythonhosted.org/packages/f7/ec/67fbef5d497f86283db54c22eec6f6140243aae73265799baaaa19cd17fb/ghp_import-2.1.0-py3-none-any.whl", hash = "sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619"},
+]
+"git-diff-lines 0.0.1" = [
+    {url = "https://files.pythonhosted.org/packages/4f/ee/d394fb99997206a17aa0e57d814444db600db97453ff53c5adf436830002/git_diff_lines-0.0.1-py3-none-any.whl", hash = "sha256:8f6261fd4f304be041983094b54e67f4cd1b6e6e7f0bea55a127bb474feff30b"},
+    {url = "https://files.pythonhosted.org/packages/5e/14/885c0e5a4fd63bc6df025aa1fa2ea4539a54acb83a45dfbd43757326f4c5/git_diff_lines-0.0.1.tar.gz", hash = "sha256:f6cb6bdccd3958550696f8731b76fed54e82f2997811af69037555f27352d0ce"},
 ]
 "idna 3.4" = [
     {url = "https://files.pythonhosted.org/packages/8b/e1/43beb3d38dba6cb420cefa297822eac205a277ab43e5ba5d5c46faf96438/idna-3.4.tar.gz", hash = "sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4"},
@@ -1254,9 +1264,9 @@ content_hash = "sha256:4b4e494309e1d2adb2098f2f0154bff66536d5d395c25b774d0d9f8f2
     {url = "https://files.pythonhosted.org/packages/77/ad/65bc35e8e4dc51528d9a361304e9cdee9adb35233b3ce70856a772eaf6b2/textual-0.14.0.tar.gz", hash = "sha256:9b71b1a90de8745b419d29eea3c5e040e5440ccca36254d934fa1e9e2916e340"},
     {url = "https://files.pythonhosted.org/packages/ef/a4/36f00af6aa5438fa7132c1ee7fc5d55897c5265a33fe8d7ae20400cdbc70/textual-0.14.0-py3-none-any.whl", hash = "sha256:9a78751ecc97a0c8e2ceb7bcb76177474036addff2889dfdcc6d83389c6277f8"},
 ]
-"thsl 0.1.1" = [
-    {url = "https://files.pythonhosted.org/packages/22/17/99b0ac6dd06039014242fc4d8095bd368ef640d1a600471e88f4de2155c1/thsl-0.1.1.tar.gz", hash = "sha256:1106871592a6f6298905e7b4361aa6ae89de1327b9e76517aeff5553cd044db7"},
-    {url = "https://files.pythonhosted.org/packages/dc/12/fcb9125505022b0b566137d952ecaf4b39be091fbc0deae068128bbfc5c4/thsl-0.1.1-py3-none-any.whl", hash = "sha256:828f586d152cf9ced88f2853f29e13ee7c33d79b4aa0ba09388a501916ef42f4"},
+"thsl 0.1.2" = [
+    {url = "https://files.pythonhosted.org/packages/6e/cb/4b1f183b189d3ad36a085e6b1efc89ff0bb6dd769564568ea83669435556/thsl-0.1.2.tar.gz", hash = "sha256:685b4a7f78f96cc5091a29a69f5d6b7f2b48eedd0ce5c0ea7dc3311dd44b67d2"},
+    {url = "https://files.pythonhosted.org/packages/da/66/43cfc69482808f3cc9ac89ab702190fae1d28f6a8ba1116302088c3222d2/thsl-0.1.2-py3-none-any.whl", hash = "sha256:aca680dba1e952bdfed1a98fac1b4dc1ab94a343d75f8dff445f3a02d7f03e89"},
 ]
 "toml 0.10.2" = [
     {url = "https://files.pythonhosted.org/packages/44/6f/7120676b6d73228c96e17f1f794d8ab046fc910d781c8d151120c3f1569e/toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
