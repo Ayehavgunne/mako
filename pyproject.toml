@@ -12,6 +12,7 @@ dependencies = [
     "dacite>=1.8.0",
     "git-diff-lines>=0.0.1",
     "pyte>=0.8.1",
+    "sansio-lsp-client>=0.10.0",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
