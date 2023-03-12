@@ -1,12 +1,24 @@
-MainScreen {
+Screen {
+    layers: below above;
+}
+
+BaseLayer {
+    height:100%;
+    width: 100%;
     layout: grid;
     grid-size: 2 1;
     grid-rows: 1fr;
     grid-columns: 1fr 3fr;
     grid-gutter: 1;
+    layer: below;
 }
 
-.side_panel {
+#dir_tree {
+    height:100%;
+    width: 100%;
+}
+
+#editor_grid {
     height:100%;
     width: 100%;
 }
@@ -16,8 +28,19 @@ MainScreen {
     width: 100%;
 }
 
-.box {
+#editor {
     height: 100%;
     width: 100%;
     border: solid green;
+}
+
+SecondLayer {
+    layer: above;
+    width: 60%;
+    height: 60%;
+    offset: 40% 40%;
+}
+
+.hide {
+    display: none;
 }

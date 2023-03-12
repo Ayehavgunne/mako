@@ -12,6 +12,7 @@ from rich.console import RenderableType
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.events import Key
+from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Static
 
@@ -25,6 +26,16 @@ class PyteDisplay:
 
 
 class Terminal(Widget, can_focus=True):
+    BINDINGS = [
+        ("ctrl+t", "hide_term", "hide terminal"),
+    ]
+
+    class HideMe(Message, bubble=True):
+        def __init__(self, sender: "Terminal", value: bool) -> None:
+            super().__init__()
+            self.value = value
+            self.editor = sender
+
     def __init__(
         self,
         send_queue: Queue,
@@ -45,14 +56,17 @@ class Terminal(Widget, can_focus=True):
         self._screen = pyte.Screen(self.nrow, self.ncol)
         self.stream = pyte.Stream(self._screen)
         self._display = PyteDisplay([Text()])
-        self.focus()
 
     def on_mount(self) -> None:
         asyncio.create_task(self.recv())  # noqa
 
+    async def action_hide_term(self) -> None:
+        self.app.logger.debug("Hi")
+        self.post_message(self.HideMe(self, True))
+
     def render(self) -> RenderableType:
-        self.nrow = self.size.height
-        self.ncol = self.size.width
+        self.nrow = self.size.width
+        self.ncol = self.size.height
         self._screen.resize(self.nrow, self.ncol)
         return self._display
 
@@ -101,14 +115,23 @@ class TerminalEmulator(Static):
         }
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    class HideMe(Message, bubble=True):
+        def __init__(self, sender: "TerminalEmulator", value: bool) -> None:
+            super().__init__()
+            self.value = value
+            self.editor = sender
+
+    def __init__(self, id: str | None = None) -> None:  # noqa: A002
+        super().__init__(id=id)
         self.data_or_disconnect = None
         self.fd = self.open_terminal()
         self.p_out = os.fdopen(self.fd, "w+b", 0)
         self.recv_queue = asyncio.Queue()
         self.send_queue = asyncio.Queue()
         self.event = asyncio.Event()
+
+    async def on_terminal_hide_me(self, message: Message) -> None:
+        self.post_message(self.HideMe(self, message.value))
 
     def compose(self) -> ComposeResult:
         asyncio.create_task(self._run())  # noqa
@@ -119,7 +142,8 @@ class TerminalEmulator(Static):
             id="content",
         )
 
-    def open_terminal(self) -> int:
+    @staticmethod
+    def open_terminal() -> int:
         pid, fd = pty.fork()
         if pid == 0:
             argv = shlex.split("zsh")

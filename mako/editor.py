@@ -1,7 +1,7 @@
 import contextlib
 import re
 from pathlib import Path
-from typing import ClassVar
+from subprocess import PIPE, Popen
 
 import pyperclip
 
@@ -9,38 +9,29 @@ from rich.console import RenderableType
 from rich.syntax import Syntax
 from rich.text import Text
 from rich.traceback import Traceback
-from textual.binding import Binding, BindingType
 from textual.events import Key, Paste
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Static
 
 from mako.config import config
-from mako.formatter import format_doc
 
 
 class Editor(Static, can_focus=True):
-    """A text editor widget."""
-
-    BINDINGS: ClassVar[list[BindingType]] = [
-        Binding("left", "cursor_left", "cursor left", show=False),
-        Binding("right", "cursor_right", "cursor right", show=False),
-        Binding("up", "cursor_up", "cursor up", show=False),
-        Binding("down", "cursor_down", "cursor down", show=False),
-        Binding("backspace", "delete_left", "delete left", show=False),
-        Binding("home", "home", "home", show=False),
-        Binding("end", "end", "end", show=False),
-        Binding("delete", "delete_right", "delete right", show=False),
-        Binding("ctrl+s", "save_file", "save file to disk", show=False),
-        Binding("ctrl+c", "copy", "copy selection to system clipboard", show=False),
-        Binding(
-            "ctrl+v",
-            "paste",
-            "paste contents from system clipboard at cursor",
-            show=False,
-        ),
+    BINDINGS = [
+        ("left", "cursor_left", "cursor left"),
+        ("right", "cursor_right", "cursor right"),
+        ("up", "cursor_up", "cursor up"),
+        ("down", "cursor_down", "cursor down"),
+        ("backspace", "delete_left", "delete left"),
+        ("home", "home", "home"),
+        ("end", "end", "end"),
+        ("delete", "delete_right", "delete right"),
+        ("ctrl+s", "save_file", "save file to disk"),
+        ("ctrl+c", "copy", "copy selection to system clipboard"),
+        ("ctrl+v", "paste", "paste contents from system clipboard at cursor"),
     ]
-    COMPONENT_CLASSES: ClassVar[set[str]] = {"editor--cursor"}
+    COMPONENT_CLASSES = {"editor_cursor"}
     DEFAULT_CSS = """
     Editor {
         background: $boost;
@@ -54,7 +45,7 @@ class Editor(Static, can_focus=True):
     Editor:focus {
         border: tall $accent;
     }
-    Editor>.editor--cursor {
+    Editor > .editor_cursor {
         background: $surface;
         color: $text;
         text-style: reverse;
@@ -72,7 +63,7 @@ class Editor(Static, can_focus=True):
     class ValueChanged(Message, bubble=True):
         def __init__(self, sender: "Editor", value: str) -> None:
             super().__init__()
-            self.value: str = value
+            self.value = value
             self.editor = sender
 
     class CursorLineChanged(Message, bubble=True):
@@ -106,6 +97,7 @@ class Editor(Static, can_focus=True):
                 self.value = file_path.read_text()
         self.file_path = file_path
         self.blink_timer = None
+        self.change_lines = []
 
     @property
     def _cursor_at_end(self) -> bool:
@@ -114,7 +106,8 @@ class Editor(Static, can_focus=True):
     async def watch_file_path(self, value: Path) -> None:
         if self.styles.auto_dimensions:
             self.refresh(layout=True)
-        self.value = self.file_path.read_text()
+        self.value = value.read_text()
+        self.change_lines = self.app.git_working_changes[value.as_posix()]
         self.cursor_line = 1
         self.cursor_column = 0
         self.post_message(self.FileChanged(self, value))
@@ -164,7 +157,7 @@ class Editor(Static, can_focus=True):
 
     def stylize_cursor(self, syntax: Syntax) -> None:
         if self._cursor_visible and self.has_focus:
-            cursor_style = self.get_component_rich_style("editor--cursor")
+            cursor_style = self.get_component_rich_style("editor_cursor")
             cursor_column = (
                 self.cursor_column
                 if self.cursor_column < len(self.current_line)
@@ -203,7 +196,6 @@ class Editor(Static, can_focus=True):
         self.blink_timer.pause()
 
     def on_focus(self) -> None:
-        # self.cursor_column = len(self.value)
         if self.cursor_blink:
             self.blink_timer.resume()
 
@@ -402,7 +394,8 @@ class Editor(Static, can_focus=True):
 
     def action_format_document(self) -> None:
         if self.file_path:
-            self.value = format_doc(
-                self.value,
-                config.current_language(self.file_path.parts[-1]).formatter,
-            )
+            formatter = config.current_language(self.file_path.parts[-1]).formatter
+            command = [formatter.command, *formatter.args]
+            process = Popen(command, stdin=PIPE, stdout=PIPE)
+            std_out, std_err = process.communicate(self.value.encode())
+            self.value = std_out.decode()

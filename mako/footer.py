@@ -1,4 +1,5 @@
 from pathlib import Path
+from subprocess import PIPE, Popen
 
 from rich.console import RenderableType
 from textual.app import ComposeResult
@@ -42,16 +43,15 @@ class Footer(Static):
             text-align: right;
             width: 100%;
         }
-        Footer > #cursor_position {
-            offset-y: 90;
-        }
-        """
+    """
 
     def compose(self) -> ComposeResult:
         yield Label(id="left")
         yield Label(id="middle")
-        with Label(id="right"):
-            yield CursorPosition(id="cursor_position")
+        yield CursorPosition(id="right")
+
+    def on_mount(self) -> None:
+        self.update_left()
 
     def update_text(self, message: Message) -> None:
         match message:
@@ -63,16 +63,18 @@ class Footer(Static):
                 self.update_right(column=line_change.value)
 
     def update_left(self) -> None:
-        self.get_child_by_id("left")
+        left = self.get_child_by_id("left")
+        cmd = "git branch --show-current".split(" ")
+        process = Popen(cmd, stdin=PIPE, stdout=PIPE)
+        std_out, std_err = process.communicate()
+        left.update(std_out.decode())
 
     def update_middle(self, file_path: Path) -> None:
         middle = self.get_child_by_id("middle")
         middle.update(file_path.as_posix())
 
     def update_right(self, line: int | None = None, column: int | None = None) -> None:
-        cursor_position = self.get_child_by_id("right").get_child_by_id(
-            "cursor_position",
-        )
+        cursor_position = self.get_child_by_id("right")
         if line is not None:
             cursor_position.line = line
         if column is not None:
