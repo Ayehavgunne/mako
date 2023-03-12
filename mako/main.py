@@ -11,7 +11,6 @@ from mako.config import config
 from mako.editor import Editor
 from mako.footer import Footer
 from mako.logger import mako_logger
-
 from mako.terminal_emulator import TerminalEmulator
 
 
@@ -83,38 +82,6 @@ class Mako(App):
         self.config = config
         self.logger = mako_logger
 
-    # def compose(self) -> ComposeResult:
-    #     yield DirectoryTree("./", classes="side_panel", id="dir_tree")
-    #     # with Grid():
-    #     with ContentSwitcher(initial="editor", id="editor_tabs"):
-    #         yield Editor(classes="box", id="editor")
-    #     yield Footer(id="footer")
-
-    # def on_directory_tree_file_selected(self, event: Event) -> None:
-    #     event.stop()
-    #     editor = self.query_one(Editor)
-    #     editor.file_path = Path(f"./{event.path}")
-    #     editor.focus()
-    #     self.sub_title = event.path
-    #
-    # async def action_move_to_left_widget(self) -> None:
-    #     self.focus_previous()
-    #
-    # async def action_move_to_right_widget(self) -> None:
-    #     self.focus_next()
-    #
-    # async def action_show_new_terminal(self) -> None:
-    #     await self.push_screen(TerminalScreen())
-    #
-    # async def on_editor_file_changed(self, message: Message) -> None:
-    #     self.query_one(Footer).update_text(message)
-    #
-    # async def on_editor_cursor_line_changed(self, message: Message) -> None:
-    #     self.query_one(Footer).update_text(message)
-    #
-    # async def on_editor_cursor_column_changed(self, message: Message) -> None:
-    #     self.query_one(Footer).update_text(message)
-    #
     def on_mount(self) -> None:
         self.push_screen("main")
 
