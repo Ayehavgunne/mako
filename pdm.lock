@@ -322,6 +322,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "pyte"
+version = "0.8.1"
+summary = "Simple VTXXX-compatible terminal emulator."
+dependencies = [
+    "wcwidth",
+]
+
+[[package]]
 name = "pytest"
 version = "7.2.2"
 requires_python = ">=3.7"
@@ -530,6 +538,11 @@ requires_python = ">=3.6"
 summary = "Filesystem events monitoring"
 
 [[package]]
+name = "wcwidth"
+version = "0.2.6"
+summary = "Measures the displayed width of unicode strings in a terminal"
+
+[[package]]
 name = "yarl"
 version = "1.8.2"
 requires_python = ">=3.7"
@@ -547,7 +560,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.1"
-content_hash = "sha256:612daa933ffc602180510a64abcab697defd7e050c314aaece14561b2536a3a6"
+content_hash = "sha256:20d92c38bf5e3c3ec360f9018b61212508546a8f88d0a6e6c94ee0836721d0a8"
 
 [metadata.files]
 "aiohttp 3.8.4" = [
@@ -1159,6 +1172,10 @@ content_hash = "sha256:612daa933ffc602180510a64abcab697defd7e050c314aaece14561b2
     {url = "https://files.pythonhosted.org/packages/4d/66/6e9d6533cd926f52a2a32e65a37581ffd565204f80e69a4e6df344ea9f7c/pyright-1.1.298-py3-none-any.whl", hash = "sha256:b492371519706459324eb2b468e2f57ae943568469b5353dbd2e44b281677198"},
     {url = "https://files.pythonhosted.org/packages/ec/65/b68562441e57330e5f36843af0df5130fad72cacbe7bfb3b928e9c7cf4ea/pyright-1.1.298.tar.gz", hash = "sha256:94a26bf56ba4eef582dffa61be20aa913db3096f4ee102c4c86592f0bced857d"},
 ]
+"pyte 0.8.1" = [
+    {url = "https://files.pythonhosted.org/packages/9f/60/442cdc1cba83710770672ef61e186be8746f419a12b2c84ba36e9a96276d/pyte-0.8.1.tar.gz", hash = "sha256:b9bfd1b781759e7572a6e553c010cc93eef58a19d8d1590446d84c19b1b097b0"},
+    {url = "https://files.pythonhosted.org/packages/c1/c8/c7313e4e1849a86ff8bdbb9731fd6a32cb555feb27f33529a1cdc2c0427a/pyte-0.8.1-py3-none-any.whl", hash = "sha256:d760ea9a7d455d179d9d7a4288fac3d231190b5226715f1fe8c62547bed9b9aa"},
+]
 "pytest 7.2.2" = [
     {url = "https://files.pythonhosted.org/packages/b2/68/5321b5793bd506961bd40bdbdd0674e7de4fb873ee7cab33dd27283ad513/pytest-7.2.2-py3-none-any.whl", hash = "sha256:130328f552dcfac0b1cec75c12e3f005619dc5f874f0a06e8ff7263f0ee6225e"},
     {url = "https://files.pythonhosted.org/packages/b9/29/311895d9cd3f003dd58e8fdea36dd895ba2da5c0c90601836f7de79f76fe/pytest-7.2.2.tar.gz", hash = "sha256:c99ab0c73aceb050f68929bc93af19ab6db0558791c6a0715723abe9d0ade9d4"},
@@ -1329,6 +1346,10 @@ content_hash = "sha256:612daa933ffc602180510a64abcab697defd7e050c314aaece14561b2
     {url = "https://files.pythonhosted.org/packages/f4/2d/ad35f33b7bfeac899bc31aaf12f4ee7fa53cc2710ad1274654c1dd63a6f1/watchdog-2.3.1-py3-none-manylinux2014_s390x.whl", hash = "sha256:9da7acb9af7e4a272089bd2af0171d23e0d6271385c51d4d9bde91fe918c53ed"},
     {url = "https://files.pythonhosted.org/packages/f4/e4/a6270a3c28872d46e53cbae034715ff80c18856167091f548aa93ad2d92b/watchdog-2.3.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:964fd236cd443933268ae49b59706569c8b741073dbfd7ca705492bae9d39aab"},
     {url = "https://files.pythonhosted.org/packages/fb/3a/ad9bf1927f344bbd161359d22771020748c4c82ea4dd45abcfe46e084655/watchdog-2.3.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d1f1200d4ec53b88bf04ab636f9133cb703eb19768a39351cee649de21a33697"},
+]
+"wcwidth 0.2.6" = [
+    {url = "https://files.pythonhosted.org/packages/20/f4/c0584a25144ce20bfcf1aecd041768b8c762c1eb0aa77502a3f0baa83f11/wcwidth-0.2.6-py2.py3-none-any.whl", hash = "sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e"},
+    {url = "https://files.pythonhosted.org/packages/5e/5f/1e4bd82a9cc1f17b2c2361a2d876d4c38973a997003ba5eb400e8a932b6c/wcwidth-0.2.6.tar.gz", hash = "sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0"},
 ]
 "yarl 1.8.2" = [
     {url = "https://files.pythonhosted.org/packages/02/51/c33498373d2e0ff5d7f3e76038b7057003927d481405780d22f140906b24/yarl-1.8.2-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:2a1fca9588f360036242f379bfea2b8b44cae2721859b1c56d033adfd5893634"},

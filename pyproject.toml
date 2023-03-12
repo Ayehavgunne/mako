@@ -11,6 +11,7 @@ dependencies = [
     "thsl>=0.1.2",
     "dacite>=1.8.0",
     "git-diff-lines>=0.0.1",
+    "pyte>=0.8.1",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -43,7 +44,7 @@ reportMissingImports = false
 select = ["ALL"]
 ignore = [
     "D", "C", "I", "PD", "ANN101", "ANN102", "A003", "EM101", "EM102", "TRY003",
-    "FBT001", "FBT002", "TCH003", "PGH003", "ERA001",
+    "FBT001", "FBT002", "TCH003", "PGH003", "ERA001", "G004", "TCH002", "PLR0913"
 ]
 
 #fixable = []
