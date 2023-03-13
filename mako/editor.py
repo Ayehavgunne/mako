@@ -9,12 +9,14 @@ from rich.console import RenderableType
 from rich.syntax import Syntax
 from rich.text import Text
 from rich.traceback import Traceback
+from textual.app import ComposeResult
 from textual.events import Key, Paste
 from textual.message import Message
 from textual.reactive import reactive
-from textual.widgets import Static
+from textual.widgets import Placeholder, Static
 
-from mako.config import config
+from mako.config import config, Language
+from mako.custom_syntax import CustomSyntax
 
 
 class Editor(Static, can_focus=True):
@@ -33,27 +35,32 @@ class Editor(Static, can_focus=True):
     ]
     COMPONENT_CLASSES = {"editor_cursor"}
     DEFAULT_CSS = """
-    Editor {
-        background: $boost;
-        color: $text;
-        padding: 0 2;
-        border: tall $background;
-        width: 100%;
-        height: 100%;
-        min-height: 1;
-    }
-    Editor:focus {
-        border: tall $accent;
-    }
-    Editor > .editor_cursor {
-        background: $surface;
-        color: $text;
-        text-style: reverse;
-    }
+        Editor {
+            background: $boost;
+            color: $text;
+            padding: 0 2;
+            border: tall $background;
+            width: 100%;
+            height: 100%;
+            min-height: 1;
+            content-align-horizontal: center;
+        }
+        Editor:focus {
+            border: tall $accent;
+        }
+        Editor > .editor_cursor {
+            background: $surface;
+            color: $text;
+            text-style: reverse;
+        }
+        Editor > #left_gutter {
+            width: 1;
+        }
     """
 
     cursor_blink: bool = reactive(default=True)
     top_offset: int = reactive(default=0)
+    _left_offset: int = reactive(default=0)
     value: str = reactive(default="", layout=True, init=False)
     file_path: Path = reactive(default=None, layout=True, init=False)
     cursor_column: int = reactive(default=0)
@@ -98,16 +105,33 @@ class Editor(Static, can_focus=True):
         self.file_path = file_path
         self.blink_timer = None
         self.change_lines = []
+        self.language_config: Language = Language()
+
+    def compose(self) -> ComposeResult:
+        yield Placeholder(id="left_gutter")
+        yield Placeholder(id="right_gutter")
 
     @property
     def _cursor_at_end(self) -> bool:
         return self.cursor_column >= len(self.value)
+
+    @property
+    def left_offset(self) -> int:
+        return self._left_offset
+
+    @left_offset.setter
+    def left_offset(self, offset: int) -> None:
+        if offset >= 0:
+            self._left_offset = offset
 
     async def watch_file_path(self, value: Path) -> None:
         if self.styles.auto_dimensions:
             self.refresh(layout=True)
         self.value = value.read_text()
         self.change_lines = self.app.git_working_changes[value.as_posix()]
+        self.language_config = config.languages[
+            Syntax.guess_lexer(self.file_path.parts[-1])
+        ]
         self.cursor_line = 1
         self.cursor_column = 0
         self.post_message(self.FileChanged(self, value))
@@ -135,7 +159,7 @@ class Editor(Static, can_focus=True):
             self.value = self.file_path.read_text()
         if self.file_path is not None:
             try:
-                syntax = Syntax(
+                syntax = CustomSyntax(
                     self.value,
                     lexer=self.file_path.parts[-1].split(".")[-1],
                     line_numbers=True,
@@ -145,9 +169,8 @@ class Editor(Static, can_focus=True):
                         self.top_offset + 1,
                         self.top_offset + self.container_viewport.height + 1,
                     ),
-                    code_width=config.languages[
-                        Syntax.guess_lexer(self.file_path.parts[-1])
-                    ].column_width,
+                    column_offset=self.left_offset,
+                    code_width=self.language_config.column_width,
                 )
             except Exception:  # noqa
                 return Traceback(width=None)
@@ -276,16 +299,25 @@ class Editor(Static, can_focus=True):
     def action_cursor_left(self) -> None:
         if self.cursor_column > 0:
             self.cursor_column -= 1
+        if self.cursor_column <= self.left_offset:
+            self.left_offset -= 1
 
     def action_cursor_right(self) -> None:
         if self.cursor_column < len(self.current_line):
             self.cursor_column += 1
+        if self.cursor_column >= self.language_config.column_width + self.left_offset:
+            self.left_offset += 1
 
     def action_cursor_up(self) -> None:
         if self.cursor_line > 1:
             self.cursor_line -= 1
         if self.cursor_line <= self.top_offset:
             self.top_offset -= 1
+        if (
+            len(self.current_line)
+            <= self.language_config.column_width + self.left_offset
+        ):
+            self.left_offset = len(self.current_line)
 
     def action_cursor_down(self) -> None:
         if self.cursor_line < len(self.value.split("\n")):
@@ -295,9 +327,11 @@ class Editor(Static, can_focus=True):
 
     def action_home(self) -> None:
         self.cursor_column = 0
+        self.left_offset = 0
 
     def action_end(self) -> None:
         self.cursor_column = len(self.current_line)
+        self.left_offset = len(self.current_line) - self.language_config.column_width
 
     _WORD_START = re.compile(r"(?<=\W)\w")
 
