@@ -34,7 +34,7 @@ BaseLayer {
     border: solid green;
 }
 
-SecondLayer {
+TerminalLayer, FuzzyFinderLayer {
     layer: above;
     width: 60%;
     height: 60%;

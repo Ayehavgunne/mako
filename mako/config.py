@@ -18,6 +18,13 @@ class Language:
     extensions: list[str] = field(default_factory=list)
     formatter: Formatter = field(default_factory=Formatter)
     column_width: int | None = None
+    tab_size: int = 4
+    word_wrap: bool = False
+    indent_guides: bool = True
+    line_numbers: bool = True
+    auto_indent: bool = True
+    auto_brackets: bool = True
+    bracket_pairs: str = "[],(),{},'',\"\",<>"
 
 
 @dataclass
@@ -25,11 +32,12 @@ class Config:
     languages: dict[str, Language] = field(default_factory=dict)
     auto_save: bool = True
     format_on_save: bool = True
+    highlight_line: bool = True
 
     def __post_init__(self) -> None:
         self.languages = defaultdict(Language, self.languages)
 
-    def current_language(self, file_name: str) -> Language:
+    def get_language(self, file_name: str) -> Language:
         return self.languages[Syntax.guess_lexer(file_name)]
 
 

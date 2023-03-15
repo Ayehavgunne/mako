@@ -69,9 +69,12 @@ class Footer(Static):
         std_out, std_err = process.communicate()
         left.update(std_out.decode())
 
-    def update_middle(self, file_path: Path) -> None:
+    def update_middle(self, file_path: Path | str) -> None:
         middle = self.get_child_by_id("middle")
-        middle.update(file_path.as_posix())
+        if isinstance(file_path, Path):
+            middle.update(file_path.as_posix())
+        else:
+            middle.update(file_path)
 
     def update_right(self, line: int | None = None, column: int | None = None) -> None:
         cursor_position = self.get_child_by_id("right")

@@ -61,7 +61,6 @@ class Terminal(Widget, can_focus=True):
         asyncio.create_task(self.recv())  # noqa
 
     async def action_hide_term(self) -> None:
-        self.app.logger.debug("Hi")
         self.post_message(self.HideMe(self, True))
 
     def render(self) -> RenderableType:

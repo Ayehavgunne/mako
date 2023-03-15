@@ -5,12 +5,13 @@ from subprocess import PIPE, Popen
 
 import pyperclip
 
+from rich.cells import get_character_cell_size
 from rich.console import RenderableType
 from rich.syntax import Syntax
 from rich.text import Text
 from rich.traceback import Traceback
 from textual.app import ComposeResult
-from textual.events import Key, Paste
+from textual.events import Click, Key, Paste
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Placeholder, Static
@@ -29,11 +30,12 @@ class Editor(Static, can_focus=True):
         ("home", "home", "home"),
         ("end", "end", "end"),
         ("delete", "delete_right", "delete right"),
+        ("tab", "add_tab", "add a tab or tabs worth of spaces"),
         ("ctrl+s", "save_file", "save file to disk"),
         ("ctrl+c", "copy", "copy selection to system clipboard"),
         ("ctrl+v", "paste", "paste contents from system clipboard at cursor"),
     ]
-    COMPONENT_CLASSES = {"editor_cursor"}
+    COMPONENT_CLASSES = {"editor_cursor", "editor_highlight_line"}
     DEFAULT_CSS = """
         Editor {
             background: $boost;
@@ -53,13 +55,16 @@ class Editor(Static, can_focus=True):
             color: $text;
             text-style: reverse;
         }
+        Editor > .editor_highlight_line {
+            background: $boost-darken-2;
+        }
         Editor > #left_gutter {
             width: 1;
         }
     """
 
     cursor_blink: bool = reactive(default=True)
-    top_offset: int = reactive(default=0)
+    _top_offset: int = reactive(default=0)
     _left_offset: int = reactive(default=0)
     value: str = reactive(default="", layout=True, init=False)
     file_path: Path = reactive(default=None, layout=True, init=False)
@@ -86,7 +91,7 @@ class Editor(Static, can_focus=True):
             self.editor = sender
 
     class FileChanged(Message, bubble=True):
-        def __init__(self, sender: "Editor", value: Path) -> None:
+        def __init__(self, sender: "Editor", value: Path | str) -> None:
             super().__init__()
             self.value = value
             self.editor = sender
@@ -116,22 +121,30 @@ class Editor(Static, can_focus=True):
         return self.cursor_column >= len(self.value)
 
     @property
+    def top_offset(self) -> int:
+        return self._top_offset
+
+    @top_offset.setter
+    def top_offset(self, offset: int) -> None:
+        if offset >= 0:
+            self._top_offset = offset
+
+    @property
     def left_offset(self) -> int:
         return self._left_offset
 
     @left_offset.setter
     def left_offset(self, offset: int) -> None:
-        if offset >= 0:
-            self._left_offset = offset
+        if offset <= 0:
+            offset = 0
+        self._left_offset = offset
 
     async def watch_file_path(self, value: Path) -> None:
         if self.styles.auto_dimensions:
             self.refresh(layout=True)
         self.value = value.read_text()
         self.change_lines = self.app.git_working_changes[value.as_posix()]
-        self.language_config = config.languages[
-            Syntax.guess_lexer(self.file_path.parts[-1])
-        ]
+        self.language_config = config.get_language(self.file_path.parts[-1])
         self.cursor_line = 1
         self.cursor_column = 0
         self.post_message(self.FileChanged(self, value))
@@ -162,18 +175,20 @@ class Editor(Static, can_focus=True):
                 syntax = CustomSyntax(
                     self.value,
                     lexer=self.file_path.parts[-1].split(".")[-1],
-                    line_numbers=True,
-                    word_wrap=False,
-                    indent_guides=True,
+                    line_numbers=self.language_config.line_numbers,
+                    word_wrap=self.language_config.word_wrap,
+                    indent_guides=self.language_config.indent_guides,
                     line_range=(
                         self.top_offset + 1,
                         self.top_offset + self.container_viewport.height + 1,
                     ),
                     column_offset=self.left_offset,
                     code_width=self.language_config.column_width,
+                    tab_size=self.language_config.tab_size,
                 )
             except Exception:  # noqa
                 return Traceback(width=None)
+            self.stylize_line(syntax)
             self.stylize_cursor(syntax)
             return syntax
         return self._value
@@ -192,6 +207,15 @@ class Editor(Static, can_focus=True):
                 (self.cursor_line, cursor_column + 1),
             )
 
+    def stylize_line(self, syntax: Syntax) -> None:
+        if config.highlight_line:
+            line_style = self.get_component_rich_style("editor_highlight_line")
+            syntax.stylize_range(
+                line_style,
+                (self.cursor_line, 0),
+                (self.cursor_line, len(self.current_line)),
+            )
+
     @property
     def _value(self) -> Text:
         if not self.value and self.file_path:
@@ -204,6 +228,29 @@ class Editor(Static, can_focus=True):
             return self.value.split("\n")[self.cursor_line - 1]
         except IndexError:
             return ""
+
+    @property
+    def next_line(self) -> str:
+        try:
+            return self.value.split("\n")[self.cursor_line]
+        except IndexError:
+            return ""
+
+    def get_indent_level(self, line: int) -> int:
+        line = self.value.split("\n")[line - 1]
+        spaces = 0
+        tabs = False
+        for char in line:
+            if char in "\t":
+                spaces += 1
+                tabs = True
+            elif char == " ":
+                spaces += 1
+            else:
+                break
+        if not tabs:
+            spaces //= self.language_config.tab_size
+        return spaces
 
     def _toggle_cursor(self) -> None:
         self._cursor_visible = not self._cursor_visible
@@ -246,25 +293,24 @@ class Editor(Static, can_focus=True):
         self.insert_text_at_cursor(event.text)
         event.stop()
 
-    # def on_click(self, event: "Click") -> None:
-    #     offset = event.get_content_offset(self)
-    #     if offset is None:
-    #         return
-    #     event.stop()
-    #     click_x = offset.x + self.view_position
-    #     cell_offset = 0
-    #     _cell_size = get_character_cell_size
-    #     for index, char in enumerate(self.value):
-    #         if cell_offset >= click_x:
-    #             self.cursor_column = index
-    #             break
-    #         cell_offset += _cell_size(char)
-    #     else:
-    #         self.cursor_column = len(self.value)
+    def on_click(self, event: Click) -> None:
+        offset = event.get_content_offset(self)
+        if offset is None:
+            return
+        event.stop()
+        click_x = offset.x + self.view_position
+        cell_offset = 0
+        _cell_size = get_character_cell_size
+        for index, char in enumerate(self.value):
+            if cell_offset >= click_x:
+                self.cursor_column = index
+                break
+            cell_offset += _cell_size(char)
+        else:
+            self.cursor_column = len(self.value)
 
     def insert_return_char(self) -> None:
         lines = self.value.split("\n")
-        self.app.logger.debug(f"{self.cursor_line=} {len(lines)=}")
         try:
             line = lines[self.cursor_line - 1]
         except IndexError:
@@ -278,7 +324,14 @@ class Editor(Static, can_focus=True):
             lines.insert(self.cursor_line, after)
         lines[self.cursor_line - 1] = line
         self.cursor_line += 1
-        self.cursor_column = 0
+        if self.language_config.auto_indent:
+            indent_level = self.get_indent_level(self.cursor_line)
+            self.cursor_column = indent_level * self.language_config.tab_size
+            lines[self.cursor_line - 1] = (
+                f"{' ' * self.cursor_column}{lines[self.cursor_line - 1]}"
+            )
+        else:
+            self.cursor_column = 0
         self.value = "\n".join(lines)
 
     def insert_text_at_cursor(self, text: str) -> None:
@@ -313,17 +366,24 @@ class Editor(Static, can_focus=True):
             self.cursor_line -= 1
         if self.cursor_line <= self.top_offset:
             self.top_offset -= 1
-        if (
-            len(self.current_line)
-            <= self.language_config.column_width + self.left_offset
-        ):
-            self.left_offset = len(self.current_line)
+        if self.cursor_column >= len(self.current_line):
+            self.left_offset = (
+                len(self.current_line) - self.language_config.column_width
+            )
+        if self.cursor_column < len(self.current_line):
+            self.left_offset = self.cursor_column - self.language_config.column_width
 
     def action_cursor_down(self) -> None:
         if self.cursor_line < len(self.value.split("\n")):
             self.cursor_line += 1
         if self.cursor_line >= self.container_viewport.height + self.top_offset - 1:
             self.top_offset += 1
+        if self.cursor_column >= len(self.current_line):
+            self.left_offset = (
+                len(self.current_line) - self.language_config.column_width
+            )
+        if self.cursor_column < len(self.current_line):
+            self.left_offset = self.cursor_column - self.language_config.column_width
 
     def action_home(self) -> None:
         self.cursor_column = 0
@@ -332,6 +392,15 @@ class Editor(Static, can_focus=True):
     def action_end(self) -> None:
         self.cursor_column = len(self.current_line)
         self.left_offset = len(self.current_line) - self.language_config.column_width
+
+    def action_add_tab(self) -> None:
+        remainder = self.cursor_column % self.language_config.tab_size
+        if remainder == 0:
+            self.insert_text_at_cursor(" " * self.language_config.tab_size)
+        else:
+            self.insert_text_at_cursor(
+                " " * (self.language_config.tab_size - remainder),
+            )
 
     _WORD_START = re.compile(r"(?<=\W)\w")
 
@@ -428,7 +497,7 @@ class Editor(Static, can_focus=True):
 
     def action_format_document(self) -> None:
         if self.file_path:
-            formatter = config.current_language(self.file_path.parts[-1]).formatter
+            formatter = self.language_config.formatter
             command = [formatter.command, *formatter.args]
             process = Popen(command, stdin=PIPE, stdout=PIPE)
             std_out, std_err = process.communicate(self.value.encode())
