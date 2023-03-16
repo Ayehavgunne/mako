@@ -34,11 +34,18 @@ BaseLayer {
     border: solid green;
 }
 
-TerminalLayer, FuzzyFinderLayer {
+TerminalLayer {
     layer: above;
     width: 60%;
     height: 60%;
     offset: 40% 40%;
+}
+
+FuzzyFinderLayer {
+    layer: above;
+    width: 80%;
+    height: 80%;
+    offset: 10% 10%;
 }
 
 .hide {

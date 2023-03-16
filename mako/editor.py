@@ -1,10 +1,8 @@
 import contextlib
 import re
 from pathlib import Path
-from subprocess import PIPE, Popen
 
 import pyperclip
-
 from rich.cells import get_character_cell_size
 from rich.console import RenderableType
 from rich.syntax import Syntax
@@ -18,6 +16,7 @@ from textual.widgets import Placeholder, Static
 
 from mako.config import config, Language
 from mako.custom_syntax import CustomSyntax
+from mako.util import call_command
 
 
 class Editor(Static, can_focus=True):
@@ -499,6 +498,5 @@ class Editor(Static, can_focus=True):
         if self.file_path:
             formatter = self.language_config.formatter
             command = [formatter.command, *formatter.args]
-            process = Popen(command, stdin=PIPE, stdout=PIPE)
-            std_out, std_err = process.communicate(self.value.encode())
-            self.value = std_out.decode()
+            out, error = call_command(command, self.value)
+            self.value = out

@@ -1,5 +1,4 @@
 from pathlib import Path
-from subprocess import PIPE, Popen
 
 from rich.console import RenderableType
 from textual.app import ComposeResult
@@ -8,6 +7,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static
 
 from mako.editor import Editor
+from mako.util import call_command
 
 
 class CursorPosition(Label):
@@ -65,9 +65,8 @@ class Footer(Static):
     def update_left(self) -> None:
         left = self.get_child_by_id("left")
         cmd = "git branch --show-current".split(" ")
-        process = Popen(cmd, stdin=PIPE, stdout=PIPE)
-        std_out, std_err = process.communicate()
-        left.update(std_out.decode())
+        out, _ = call_command(cmd)
+        left.update(out)
 
     def update_middle(self, file_path: Path | str) -> None:
         middle = self.get_child_by_id("middle")

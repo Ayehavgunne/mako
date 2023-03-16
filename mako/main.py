@@ -1,4 +1,6 @@
+import os
 import subprocess
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -26,6 +28,12 @@ class FuzzyFinderLayer(Static):
     def compose(self) -> ComposeResult:
         yield FuzzyFinder(id="fuzzy_finder")
 
+    async def on_fuzzy_finder_file_selected(
+        self,
+        message: Message,
+    ) -> None:
+        self.app.get_child_by_id("base_layer").on_directory_tree_file_selected(message)
+
 
 class BaseLayer(Static):
     BINDINGS = [
@@ -33,10 +41,10 @@ class BaseLayer(Static):
         ("ctrl+right", "move_to_right_widget", "move to the widget on the right"),
         ("ctrl+t", "toggle_term", "show/hide terminal"),
         (
-            "ctrl+@",
+            "ctrl+@",  # this is actually ctrl+space for some reason
             "command_mode",
             "go into command mode",
-        ),  # this is actually ctrl+space for some reason
+        ),
     ]
 
     def bind(
@@ -63,7 +71,7 @@ class BaseLayer(Static):
                 yield Editor(id="editor")
         yield Footer(id="footer")
 
-    def on_directory_tree_file_selected(self, event: Event) -> None:
+    def on_directory_tree_file_selected(self, event: Event | Message) -> None:
         event.stop()
         editor = self.query_one(Editor)
         editor.file_path = Path(f"./{event.path}")
@@ -87,12 +95,19 @@ class BaseLayer(Static):
             self.screen.focus_previous()
 
     async def action_toggle_fuzzy_finder(self) -> None:
-        self.app.logger.debug("ENTER FUZZY FINDER")
         fuzzy_finder_layer = self.app.get_child_by_id("fuzzy_finder_layer")
         if fuzzy_finder_layer.has_class("hide"):
             fuzzy_finder_layer.remove_class("hide")
             fuzzy_finder = fuzzy_finder_layer.get_child_by_id("fuzzy_finder")
-            fuzzy_finder.get_child_by_id("search_bar").focus()
+            fuzzy_finder.focus()
+            await self.action_exit_command_mode()
+            self.bind(
+                "escape",
+                "toggle_fuzzy_finder",
+                description="exit fuzzy finder",
+                show=False,
+            )
+            fuzzy_finder.showing()
         else:
             fuzzy_finder_layer.add_class("hide")
             self.screen.focus_previous()
@@ -113,6 +128,7 @@ class BaseLayer(Static):
         self.query_one(Footer).update_text(
             Editor.FileChanged(Editor(), value="COMMAND MODE"),
         )
+        self.query_one(DirectoryTree).focus()
 
     async def action_exit_command_mode(self) -> None:
         self.bind("escape", "")
@@ -120,7 +136,6 @@ class BaseLayer(Static):
         self.query_one(Footer).update_text(
             Editor.FileChanged(Editor(), value=""),
         )
-        await self.action_toggle_fuzzy_finder()
 
     async def on_editor_file_changed(self, message: Message) -> None:
         self.query_one(Footer).update_text(message)
@@ -181,7 +196,15 @@ class Mako(App):
     async def on_terminal_emulator_hide_me(self, _: Message) -> None:
         await self.get_child_by_id("base_layer").action_toggle_term()
 
+    def debg(self, msg: str) -> None:
+        self.logger.debug(msg)
+
 
 if __name__ == "__main__":
+    args = sys.argv
+    if len(args) > 1:
+        directory = Path(args[1])
+        if directory.is_dir():
+            os.chdir(directory)
     app = Mako()
     app.run()
