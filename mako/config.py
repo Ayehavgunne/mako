@@ -7,6 +7,17 @@ import thsl
 from rich.syntax import Syntax
 
 
+def default_brackets() -> dict[str, str]:
+    return {
+        "[": "]",
+        "(": ")",
+        "{": "}",
+        "'": "'",
+        '"': '"',
+        "<": ">",
+    }
+
+
 @dataclass
 class Formatter:
     command: str = ""
@@ -24,12 +35,35 @@ class Language:
     line_numbers: bool = True
     auto_indent: bool = True
     auto_brackets: bool = True
-    bracket_pairs: str = "[],(),{},'',\"\",<>"
+    bracket_pairs: dict[str] = field(default_factory=default_brackets)
+
+
+@dataclass
+class EditMode:
+    up: str = "up"
+
+
+@dataclass
+class CommandMode:
+    up: str = "up"
+
+
+@dataclass
+class SelectMode:
+    up: str = "up"
+
+
+@dataclass
+class Keybinds:
+    edit: EditMode = field(default_factory=EditMode)
+    command: CommandMode = field(default_factory=CommandMode)
+    select: SelectMode = field(default_factory=SelectMode)
 
 
 @dataclass
 class Config:
     languages: dict[str, Language] = field(default_factory=dict)
+    keybinds: Keybinds = field(default_factory=Keybinds)
     auto_save: bool = True
     format_on_save: bool = True
     highlight_line: bool = True

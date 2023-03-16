@@ -3,13 +3,12 @@ import re
 from pathlib import Path
 
 import pyperclip
-from rich.cells import get_character_cell_size
 from rich.console import RenderableType
 from rich.syntax import Syntax
 from rich.text import Text
 from rich.traceback import Traceback
 from textual.app import ComposeResult
-from textual.events import Click, Key, Paste
+from textual.events import Key, Paste
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Placeholder, Static
@@ -292,21 +291,21 @@ class Editor(Static, can_focus=True):
         self.insert_text_at_cursor(event.text)
         event.stop()
 
-    def on_click(self, event: Click) -> None:
-        offset = event.get_content_offset(self)
-        if offset is None:
-            return
-        event.stop()
-        click_x = offset.x + self.view_position
-        cell_offset = 0
-        _cell_size = get_character_cell_size
-        for index, char in enumerate(self.value):
-            if cell_offset >= click_x:
-                self.cursor_column = index
-                break
-            cell_offset += _cell_size(char)
-        else:
-            self.cursor_column = len(self.value)
+    # def on_click(self, event: Click) -> None:
+    #     offset = event.get_content_offset(self)
+    #     if offset is None:
+    #         return
+    #     event.stop()
+    #     click_x = offset.x + self.view_position
+    #     cell_offset = 0
+    #     _cell_size = get_character_cell_size
+    #     for index, char in enumerate(self.value):
+    #         if cell_offset >= click_x:
+    #             self.cursor_column = index
+    #             break
+    #         cell_offset += _cell_size(char)
+    #     else:
+    #         self.cursor_column = len(self.value)
 
     def insert_return_char(self) -> None:
         lines = self.value.split("\n")

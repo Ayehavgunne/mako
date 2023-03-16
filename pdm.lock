@@ -507,6 +507,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "tree-sitter"
+version = "0.20.1"
+requires_python = ">=3.3"
+summary = "Python bindings to the Tree-sitter parsing library"
+
+[[package]]
 name = "typing-extensions"
 version = "4.5.0"
 requires_python = ">=3.7"
@@ -587,7 +593,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.1"
-content_hash = "sha256:17b27aec2932fbc463d61b3cafa2cf5b9ebab5de880db30bc4f4216df9581bb0"
+content_hash = "sha256:93b45889087a09a6fca6f710068774131b736fd5033af2228ca21f80824cd823"
 
 [metadata.files]
 "aiohttp 3.8.4" = [
@@ -1556,6 +1562,10 @@ content_hash = "sha256:17b27aec2932fbc463d61b3cafa2cf5b9ebab5de880db30bc4f4216df
 "trailrunner 1.2.1" = [
     {url = "https://files.pythonhosted.org/packages/89/4e/ac7d39c9f6a77f4f3f07718124bf344e1004f3d6e4a5a1b9ec709299fdc5/trailrunner-1.2.1-py3-none-any.whl", hash = "sha256:dff4ee07cf079bcd388585ee6f14911e2c9292d58bf7cc6047912e082ec21283"},
     {url = "https://files.pythonhosted.org/packages/d3/50/d27ebb8bb87a2b2d82898146f2f4926c3f76d972c53dd51f21575b5f1ebd/trailrunner-1.2.1.tar.gz", hash = "sha256:157de2b2d82139d9583ec1dbc1981c33b39e24c420bb5294f86083f1f4b44311"},
+]
+"tree-sitter 0.20.1" = [
+    {url = "https://files.pythonhosted.org/packages/54/d4/7cdecaad1c3564470938b631908589b1e2a0f91bf5d817b8b00d5f438d90/tree_sitter-0.20.1-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:6f11a1fd909dcf569e7b1d98861a837436799e757bbbc5cd5280989050929e12"},
+    {url = "https://files.pythonhosted.org/packages/ea/11/8d3f8ed4761c375dca0918a5b170aa2d777f5325c5442c36c0851305b77a/tree_sitter-0.20.1.tar.gz", hash = "sha256:e93f082c545d6649bcfb5d681ed255eb004a6ce22988971a128f40692feec60d"},
 ]
 "typing-extensions 4.5.0" = [
     {url = "https://files.pythonhosted.org/packages/31/25/5abcd82372d3d4a3932e1fa8c3dbf9efac10cc7c0d16e78467460571b404/typing_extensions-4.5.0-py3-none-any.whl", hash = "sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4"},
