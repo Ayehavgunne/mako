@@ -8,6 +8,12 @@ authors = [
 dependencies = [
     "textual>=0.14.0",
     "pyperclip>=1.8.2",
+    "thsl>=0.1.2",
+    "dacite>=1.8.0",
+    "pyte>=0.8.1",
+    "sansio-lsp-client>=0.10.0",
+    "levenshtein>=0.20.9",
+    "tree-sitter>=0.20.1",
 ]
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -40,7 +46,8 @@ reportMissingImports = false
 select = ["ALL"]
 ignore = [
     "D", "C", "I", "PD", "ANN101", "ANN102", "A003", "EM101", "EM102", "TRY003",
-    "FBT001", "FBT002", "TCH003", "PGH003", "ERA001",
+    "FBT001", "FBT002", "TCH003", "PGH003", "ERA001", "G004", "TCH002", "PLR0913",
+    "FBT003", "PLW2901",
 ]
 
 #fixable = []
@@ -54,3 +61,4 @@ exclude = [
 
 [tool.black]
 exclude = "__pypackages__"
+preview = true

@@ -1,0 +1,53 @@
+Screen {
+    layers: below above;
+}
+
+BaseLayer {
+    height:100%;
+    width: 100%;
+    layout: grid;
+    grid-size: 2 1;
+    grid-rows: 1fr;
+    grid-columns: 1fr 3fr;
+    grid-gutter: 1;
+    layer: below;
+}
+
+#dir_tree {
+    height:100%;
+    width: 100%;
+}
+
+#editor_grid {
+    height:100%;
+    width: 100%;
+}
+
+#editor_tabs {
+    height:100%;
+    width: 100%;
+}
+
+#editor {
+    height: 100%;
+    width: 100%;
+    border: solid green;
+}
+
+TerminalLayer {
+    layer: above;
+    width: 60%;
+    height: 60%;
+    offset: 40% 40%;
+}
+
+FuzzyFinderLayer {
+    layer: above;
+    width: 80%;
+    height: 80%;
+    offset: 10% 10%;
+}
+
+.hide {
+    display: none;
+}
