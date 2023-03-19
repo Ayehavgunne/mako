@@ -476,7 +476,7 @@ dependencies = [
 
 [[package]]
 name = "thsl"
-version = "0.1.2"
+version = "0.1.3"
 requires_python = ">=3.10"
 summary = "A typed configuration language"
 dependencies = [
@@ -1547,9 +1547,9 @@ content_hash = "sha256:93b45889087a09a6fca6f710068774131b736fd5033af2228ca21f808
     {url = "https://files.pythonhosted.org/packages/b0/24/14b560eb39311e7ad09fcd6eb6406fe3c1aa4430d3d87df8e6a80528022f/textual-0.15.1.tar.gz", hash = "sha256:b86d4668a072fc85092f081e157e1e7575b353b2f6b728755752bbbe23123063"},
     {url = "https://files.pythonhosted.org/packages/fa/c5/0766a557d74f34a3cac0903e95a362489f0b60b2256bbb1c66d5340c7391/textual-0.15.1-py3-none-any.whl", hash = "sha256:be79dd8d7f3f5b5c40893da4d5d8228e54c5c9f7b844abfb0e8a13ce2b3a7930"},
 ]
-"thsl 0.1.2" = [
-    {url = "https://files.pythonhosted.org/packages/6e/cb/4b1f183b189d3ad36a085e6b1efc89ff0bb6dd769564568ea83669435556/thsl-0.1.2.tar.gz", hash = "sha256:685b4a7f78f96cc5091a29a69f5d6b7f2b48eedd0ce5c0ea7dc3311dd44b67d2"},
-    {url = "https://files.pythonhosted.org/packages/da/66/43cfc69482808f3cc9ac89ab702190fae1d28f6a8ba1116302088c3222d2/thsl-0.1.2-py3-none-any.whl", hash = "sha256:aca680dba1e952bdfed1a98fac1b4dc1ab94a343d75f8dff445f3a02d7f03e89"},
+"thsl 0.1.3" = [
+    {url = "https://files.pythonhosted.org/packages/50/b7/b78f229d16153702ff10ac1d5e3379664adff53cf3421d629d463c77e063/thsl-0.1.3.tar.gz", hash = "sha256:addbd7e5c75d73c4bbd90efd282d4a52960c4d7d2ac14caf54bf79c270f43202"},
+    {url = "https://files.pythonhosted.org/packages/8f/93/3c8485c02d7a7d8612d81c71906b03535c356287681748ad7ffc0c047248/thsl-0.1.3-py3-none-any.whl", hash = "sha256:fd8bc5c1f1c174d4f178a728e42280147ccaa4aa1cb008190b790118b13bf73a"},
 ]
 "toml 0.10.2" = [
     {url = "https://files.pythonhosted.org/packages/44/6f/7120676b6d73228c96e17f1f794d8ab046fc910d781c8d151120c3f1569e/toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},

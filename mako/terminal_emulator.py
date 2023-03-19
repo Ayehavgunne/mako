@@ -104,22 +104,6 @@ class Terminal(Widget, can_focus=True):
 
 
 class TerminalEmulator(Static):
-    # BINDINGS = [("escape", "hide_terminal", "hide the terminal")]
-    DEFAULT_CSS = """
-        TerminalEmulator {
-            background: #1e1e1e 10%;
-            height: 100%;
-            width: 100%;
-        }
-        TerminalEmulator > #content {
-            background: #1e1e1e;
-            border: round white;
-            height: 100%;
-            width: 100%;
-            padding: 1;
-        }
-    """
-
     def __init__(self, id: str | None = None) -> None:  # noqa: A002
         super().__init__(id=id)
         self.data_or_disconnect = None

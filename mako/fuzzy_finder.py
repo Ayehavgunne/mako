@@ -15,46 +15,6 @@ from mako.util import assign_keybinds, fuzzy_finder
 
 class FuzzyFinder(Static, can_focus=True):
     COMPONENT_CLASSES = ["selected_file", "placeholder"]
-    # BINDINGS = [
-    #     ("up", "move_up_a_file", "move file selector up one in the list"),
-    #     ("down", "move_down_a_file", "move file selector down one in the list"),
-    #     ("enter", "select_a_file", "open a file from the list"),
-    #     ("escape", "hide_fuzzy_finder", "hide the fuzzy finder"),
-    # ]
-    DEFAULT_CSS = """
-        FuzzyFinder {
-            background: #1e1e1e 10%;
-            border: round white;
-            padding: 1;
-            width: 100%;
-            height: 100%;
-            min-height: 1;
-            layout: grid;
-            grid-size: 2 2;
-            grid-rows: 2 1fr;
-        }
-        FuzzyFinder > #search_bar {
-            border-bottom: solid white;
-            width: 98%;
-        }
-        FuzzyFinder > #file_list {
-            height: 100%;
-        }
-        FuzzyFinder > #file_preview {
-            row-span: 2;
-            height: 100%;
-            border-left: solid white;
-            padding: 0 0 0 1;
-        }
-        FuzzyFinder > .selected_file {
-            background: $surface;
-            color: $text;
-            text-style: reverse;
-        }
-        FuzzyFinder > .placeholder {
-            color: $text-disabled;
-        }
-    """
 
     selected_file_line = reactive(0)
     value = reactive("")

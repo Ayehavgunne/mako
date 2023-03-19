@@ -19,32 +19,6 @@ class CursorPosition(Label):
 
 
 class Footer(Static):
-    DEFAULT_CSS = """
-        Footer {
-            background: #2e2e2e;
-            color: $text;
-            dock: bottom;
-            height: 1;
-            layout: grid;
-            grid-size: 3;
-            grid-columns: 1fr 1fr 1fr;
-        }
-        Footer > #left {
-            text-style: bold;
-            width: 100%;
-        }
-        Footer > #middle {
-            text-style: bold;
-            text-align: center;
-            width: 100%;
-        }
-        Footer > #right {
-            text-style: bold;
-            text-align: right;
-            width: 100%;
-        }
-    """
-
     def compose(self) -> ComposeResult:
         yield Label(id="left")
         yield Label(id="middle")

@@ -167,18 +167,9 @@ class BaseLayer(Static):
 
 
 class Mako(App):
-    CSS_PATH = "app.css"
+    CSS_PATH = "app.tcss"
     BINDINGS = [
         ("ctrl+c", "", ""),
-        # ("ctrl+q", "quit", "exit mako"),
-        # (
-        #     "ctrl+space",  # this is actually ctrl+space for some reason
-        #     "command_mode",
-        #     "go into command mode",
-        # ),
-        # ("escape", "exit_command_mode", "exit command mode"),
-        # ("ctrl+left", "move_to_left_widget", "move to the widget on the left"),
-        # ("ctrl+right", "move_to_right_widget", "move to the widget on the right"),
     ]
 
     def __init__(

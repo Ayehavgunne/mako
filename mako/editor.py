@@ -19,47 +19,7 @@ from mako.util import assign_keybinds, call_command
 
 
 class Editor(Static, can_focus=True):
-    # BINDINGS = [
-    #     ("left", "cursor_left", "cursor left"),
-    #     ("right", "cursor_right", "cursor right"),
-    #     ("up", "cursor_up", "cursor up"),
-    #     ("down", "cursor_down", "cursor down"),
-    #     ("backspace", "delete_left", "delete left"),
-    #     ("delete", "delete_right", "delete right"),
-    #     ("home", "home", "home"),
-    #     ("end", "end", "end"),
-    #     ("tab", "add_tab", "add a tab or tabs worth of spaces"),
-    #     ("ctrl+s", "save_file", "save file to disk"),
-    #     ("ctrl+c", "copy", "copy selection to system clipboard"),
-    #     ("ctrl+v", "paste", "paste contents from system clipboard at cursor"),
-    # ]
     COMPONENT_CLASSES = {"editor_cursor", "editor_highlight_line"}
-    DEFAULT_CSS = """
-        Editor {
-            background: $boost;
-            color: $text;
-            padding: 0 2;
-            border: tall $background;
-            width: 100%;
-            height: 100%;
-            min-height: 1;
-            content-align-horizontal: center;
-        }
-        Editor:focus {
-            border: tall $accent;
-        }
-        Editor > .editor_cursor {
-            background: $surface;
-            color: $text;
-            text-style: reverse;
-        }
-        Editor > .editor_highlight_line {
-            background: $boost-darken-2;
-        }
-        Editor > #left_gutter {
-            width: 1;
-        }
-    """
 
     cursor_blink: bool = reactive(default=True)
     _top_offset: int = reactive(default=0)
