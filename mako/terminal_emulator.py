@@ -12,9 +12,10 @@ from rich.console import RenderableType
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.events import Key
-from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Static
+
+from mako.util import assign_keybinds
 
 
 class PyteDisplay:
@@ -26,16 +27,6 @@ class PyteDisplay:
 
 
 class Terminal(Widget, can_focus=True):
-    BINDINGS = [
-        ("ctrl+t", "hide_term", "hide terminal"),
-    ]
-
-    class HideMe(Message, bubble=True):
-        def __init__(self, sender: "Terminal", value: bool) -> None:
-            super().__init__()
-            self.value = value
-            self.editor = sender
-
     def __init__(
         self,
         send_queue: Queue,
@@ -57,11 +48,25 @@ class Terminal(Widget, can_focus=True):
         self.stream = pyte.Stream(self._screen)
         self._display = PyteDisplay([Text()])
 
+    def bind(
+        self,
+        keys: str,
+        action: str,
+        *,
+        description: str = "",
+        show: bool = True,
+        key_display: str | None = None,
+    ) -> None:
+        self._bindings.bind(
+            keys,
+            action,
+            description,
+            show=show,
+            key_display=key_display,
+        )
+
     def on_mount(self) -> None:
         asyncio.create_task(self.recv())  # noqa
-
-    async def action_hide_term(self) -> None:
-        self.post_message(self.HideMe(self, True))
 
     def render(self) -> RenderableType:
         self.nrow = self.size.width
@@ -99,6 +104,7 @@ class Terminal(Widget, can_focus=True):
 
 
 class TerminalEmulator(Static):
+    # BINDINGS = [("escape", "hide_terminal", "hide the terminal")]
     DEFAULT_CSS = """
         TerminalEmulator {
             background: #1e1e1e 10%;
@@ -114,12 +120,6 @@ class TerminalEmulator(Static):
         }
     """
 
-    class HideMe(Message, bubble=True):
-        def __init__(self, sender: "TerminalEmulator", value: bool) -> None:
-            super().__init__()
-            self.value = value
-            self.editor = sender
-
     def __init__(self, id: str | None = None) -> None:  # noqa: A002
         super().__init__(id=id)
         self.data_or_disconnect = None
@@ -128,9 +128,24 @@ class TerminalEmulator(Static):
         self.recv_queue = asyncio.Queue()
         self.send_queue = asyncio.Queue()
         self.event = asyncio.Event()
+        assign_keybinds(self, "terminal")
 
-    async def on_terminal_hide_me(self, message: Message) -> None:
-        self.post_message(self.HideMe(self, message.value))
+    def bind(
+        self,
+        keys: str,
+        action: str,
+        *,
+        description: str = "",
+        show: bool = True,
+        key_display: str | None = None,
+    ) -> None:
+        self._bindings.bind(
+            keys,
+            action,
+            description,
+            show=show,
+            key_display=key_display,
+        )
 
     def compose(self) -> ComposeResult:
         asyncio.create_task(self._run())  # noqa
@@ -140,6 +155,10 @@ class TerminalEmulator(Static):
             self.send_queue,
             id="content",
         )
+
+    async def action_hide_terminal(self) -> None:
+        self.parent.add_class("hide")
+        self.app.screen.focus_previous()
 
     @staticmethod
     def open_terminal() -> int:

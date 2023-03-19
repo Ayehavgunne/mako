@@ -2,21 +2,21 @@ import logging
 import sys
 
 
-class StreamToLogger(object):
+class StreamToLogger:
     """
     Fake file-like stream object that redirects writes to a logger instance.
     """
 
-    def __init__(self, logger, level):
+    def __init__(self, logger: logging.Logger, level: int) -> None:
         self.logger = logger
         self.level = level
         self.linebuf = ""
 
-    def write(self, buf):
+    def write(self, buf: str) -> None:
         for line in buf.rstrip().splitlines():
             self.logger.log(self.level, line.rstrip())
 
-    def flush(self):
+    def flush(self) -> None:
         pass
 
 

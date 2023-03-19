@@ -15,24 +15,24 @@ from textual.widgets import Placeholder, Static
 
 from mako.config import config, Language
 from mako.custom_syntax import CustomSyntax
-from mako.util import call_command
+from mako.util import assign_keybinds, call_command
 
 
 class Editor(Static, can_focus=True):
-    BINDINGS = [
-        ("left", "cursor_left", "cursor left"),
-        ("right", "cursor_right", "cursor right"),
-        ("up", "cursor_up", "cursor up"),
-        ("down", "cursor_down", "cursor down"),
-        ("backspace", "delete_left", "delete left"),
-        ("home", "home", "home"),
-        ("end", "end", "end"),
-        ("delete", "delete_right", "delete right"),
-        ("tab", "add_tab", "add a tab or tabs worth of spaces"),
-        ("ctrl+s", "save_file", "save file to disk"),
-        ("ctrl+c", "copy", "copy selection to system clipboard"),
-        ("ctrl+v", "paste", "paste contents from system clipboard at cursor"),
-    ]
+    # BINDINGS = [
+    #     ("left", "cursor_left", "cursor left"),
+    #     ("right", "cursor_right", "cursor right"),
+    #     ("up", "cursor_up", "cursor up"),
+    #     ("down", "cursor_down", "cursor down"),
+    #     ("backspace", "delete_left", "delete left"),
+    #     ("delete", "delete_right", "delete right"),
+    #     ("home", "home", "home"),
+    #     ("end", "end", "end"),
+    #     ("tab", "add_tab", "add a tab or tabs worth of spaces"),
+    #     ("ctrl+s", "save_file", "save file to disk"),
+    #     ("ctrl+c", "copy", "copy selection to system clipboard"),
+    #     ("ctrl+v", "paste", "paste contents from system clipboard at cursor"),
+    # ]
     COMPONENT_CLASSES = {"editor_cursor", "editor_highlight_line"}
     DEFAULT_CSS = """
         Editor {
@@ -98,7 +98,7 @@ class Editor(Static, can_focus=True):
         self,
         file_path: Path | None = None,
         name: str | None = None,
-        id: str | None = None,  # noqa
+        id: str | None = None,  # noqa: A002
         classes: str | None = None,
     ) -> None:
         super().__init__(name=name, id=id, classes=classes, disabled=False)
@@ -109,6 +109,24 @@ class Editor(Static, can_focus=True):
         self.blink_timer = None
         self.change_lines = []
         self.language_config: Language = Language()
+        assign_keybinds(self, "edit")
+
+    def bind(
+        self,
+        keys: str,
+        action: str,
+        *,
+        description: str = "",
+        show: bool = True,
+        key_display: str | None = None,
+    ) -> None:
+        self._bindings.bind(
+            keys,
+            action,
+            description,
+            show=show,
+            key_display=key_display,
+        )
 
     def compose(self) -> ComposeResult:
         yield Placeholder(id="left_gutter")

@@ -10,18 +10,17 @@ from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Static
 
-from mako.util import fuzzy_finder
-
-FUZZY_RATIO_LIMIT = 0.2
+from mako.util import assign_keybinds, fuzzy_finder
 
 
 class FuzzyFinder(Static, can_focus=True):
     COMPONENT_CLASSES = ["selected_file", "placeholder"]
-    BINDINGS = [
-        ("up", "move_up_a_file", "Move file selector up one in the list"),
-        ("down", "move_down_a_file", "Move file selector down one in the list"),
-        ("enter", "select_a_file", "Open a file from the list"),
-    ]
+    # BINDINGS = [
+    #     ("up", "move_up_a_file", "move file selector up one in the list"),
+    #     ("down", "move_down_a_file", "move file selector down one in the list"),
+    #     ("enter", "select_a_file", "open a file from the list"),
+    #     ("escape", "hide_fuzzy_finder", "hide the fuzzy finder"),
+    # ]
     DEFAULT_CSS = """
         FuzzyFinder {
             background: #1e1e1e 10%;
@@ -78,6 +77,24 @@ class FuzzyFinder(Static, can_focus=True):
         self.file_contents: dict[str, Syntax] = {}
         self.available_display_lines = 0
         self.visible_file_offset = 0
+        assign_keybinds(self, "fuzzy_finder")
+
+    def bind(
+        self,
+        keys: str,
+        action: str,
+        *,
+        description: str = "",
+        show: bool = True,
+        key_display: str | None = None,
+    ) -> None:
+        self._bindings.bind(
+            keys,
+            action,
+            description,
+            show=show,
+            key_display=key_display,
+        )
 
     def compose(self) -> ComposeResult:
         yield Static(id="search_bar")
@@ -100,7 +117,7 @@ class FuzzyFinder(Static, can_focus=True):
         with Path(".ignore") as ignore_file:
             if ignore_file.is_file():
                 for line in ignore_file.read_text().split("\n"):
-                    if line != "":
+                    if line:
                         file_list = [file for file in file_list if line not in file]
 
         file_list.sort()
@@ -187,7 +204,6 @@ class FuzzyFinder(Static, can_focus=True):
 
     def action_select_a_file(self) -> None:
         file = self.visible_files[self.selected_file_line]
-        self.post_message(self.FileSelected(self, str(file)))
         self.file_contents = {}
         self.file_list = []
         self.filtered_files = []
@@ -196,8 +212,12 @@ class FuzzyFinder(Static, can_focus=True):
         self.visible_file_offset = 0
         self.available_display_lines = 0
         self.value = ""
-        self.add_class("hide")
-        self.app.get_child_by_id("base_layer").refresh(layout=True)
+        self.parent.add_class("hide")
+        self.post_message(self.FileSelected(self, str(file)))
+
+    def action_hide_fuzzy_finder(self) -> None:
+        self.parent.add_class("hide")
+        self.app.screen.focus_previous()
 
     async def on_key(self, event: Key) -> None:
         if await self.handle_key(event):

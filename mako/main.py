@@ -1,15 +1,16 @@
 import os
-import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
+from rich.console import RenderableType
 from textual.app import App, ComposeResult, CSSPathType
 from textual.containers import Grid
 from textual.driver import Driver
 from textual.events import Event
 from textual.message import Message
-from textual.widgets import DirectoryTree, Static, Tabs
+from textual.widgets import DataTable, DirectoryTree, Static, Tabs
 
 from mako.config import config
 from mako.editor import Editor
@@ -17,36 +18,91 @@ from mako.footer import Footer
 from mako.fuzzy_finder import FuzzyFinder
 from mako.logger import mako_logger
 from mako.terminal_emulator import TerminalEmulator
+from mako.util import assign_keybinds, call_command
 
 
 class TerminalLayer(Static):
     def compose(self) -> ComposeResult:
-        yield TerminalEmulator(id="term")
+        yield TerminalEmulator(id="terminal")
 
 
 class FuzzyFinderLayer(Static):
     def compose(self) -> ComposeResult:
         yield FuzzyFinder(id="fuzzy_finder")
 
-    async def on_fuzzy_finder_file_selected(
-        self,
-        message: Message,
-    ) -> None:
+    async def on_fuzzy_finder_file_selected(self, message: Message) -> None:
         self.app.get_child_by_id("base_layer").on_directory_tree_file_selected(message)
 
 
-class BaseLayer(Static):
-    BINDINGS = [
-        ("ctrl+left", "move_to_left_widget", "move to the widget on the left"),
-        ("ctrl+right", "move_to_right_widget", "move to the widget on the right"),
-        ("ctrl+t", "toggle_term", "show/hide terminal"),
-        (
-            "ctrl+@",  # this is actually ctrl+space for some reason
-            "command_mode",
-            "go into command mode",
-        ),
-    ]
+class CommandModeLayer(Static, can_focus=True):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        assign_keybinds(self, "command")
 
+    def bind(
+        self,
+        keys: str,
+        action: str,
+        *,
+        description: str = "",
+        show: bool = True,
+        key_display: str | None = None,
+    ) -> None:
+        self._bindings.bind(
+            keys,
+            action,
+            description,
+            show=show,
+            key_display=key_display,
+        )
+
+    def compose(self) -> ComposeResult:
+        yield DataTable(
+            id="command_list",
+            disabled=True,
+            show_cursor=False,
+            show_header=False,
+            show_row_labels=False,
+        )
+
+    def render(self) -> RenderableType:
+        table = self.get_child_by_id("command_list", DataTable)
+        table.clear(columns=True)
+        table_height = 18
+        row_num = 0
+        rows = [[] for _ in range(table_height)]
+        for binding in self._bindings.keys.values():
+            rows[row_num].append(f"{binding.key}: {binding.description}")
+            row_num += 1
+            if row_num % table_height == 0:
+                row_num = 0
+        table.add_columns(*rows[0])
+        table.add_rows(rows)
+        return ""
+
+    async def action_show_terminal(self) -> None:
+        await self.app.action_exit_command_mode()
+        fuzzy_finder_layer = self.app.get_child_by_id("fuzzy_finder_layer")
+        if not fuzzy_finder_layer.has_class("hide"):
+            fuzzy_finder_layer.add_class("hide")
+        terminal_layer = self.app.get_child_by_id("terminal_layer")
+        terminal_layer.remove_class("hide")
+        term = terminal_layer.get_child_by_id("terminal")
+        term.get_child_by_id("content").focus()
+
+    async def action_show_fuzzy_finder(self) -> None:
+        await self.app.action_exit_command_mode()
+        terminal_layer = self.app.get_child_by_id("terminal_layer")
+        if not terminal_layer.has_class("hide"):
+            terminal_layer.add_class("hide")
+        fuzzy_finder_layer = self.app.get_child_by_id("fuzzy_finder_layer")
+        fuzzy_finder_layer.remove_class("hide")
+        fuzzy_finder = fuzzy_finder_layer.get_child_by_id("fuzzy_finder")
+        fuzzy_finder.focus()
+        fuzzy_finder.showing()
+
+
+class BaseLayer(Static):
     def bind(
         self,
         keys: str,
@@ -78,65 +134,6 @@ class BaseLayer(Static):
         editor.focus()
         self.app.sub_title = event.path
 
-    async def action_move_to_left_widget(self) -> None:
-        self.screen.focus_previous()
-
-    async def action_move_to_right_widget(self) -> None:
-        self.screen.focus_next()
-
-    async def action_toggle_term(self) -> None:
-        terminal_layer = self.app.get_child_by_id("terminal_layer")
-        if terminal_layer.has_class("hide"):
-            terminal_layer.remove_class("hide")
-            term = terminal_layer.get_child_by_id("term")
-            term.get_child_by_id("content").focus()
-        else:
-            terminal_layer.add_class("hide")
-            self.screen.focus_previous()
-
-    async def action_toggle_fuzzy_finder(self) -> None:
-        fuzzy_finder_layer = self.app.get_child_by_id("fuzzy_finder_layer")
-        if fuzzy_finder_layer.has_class("hide"):
-            fuzzy_finder_layer.remove_class("hide")
-            fuzzy_finder = fuzzy_finder_layer.get_child_by_id("fuzzy_finder")
-            fuzzy_finder.focus()
-            await self.action_exit_command_mode()
-            self.bind(
-                "escape",
-                "toggle_fuzzy_finder",
-                description="exit fuzzy finder",
-                show=False,
-            )
-            fuzzy_finder.showing()
-        else:
-            fuzzy_finder_layer.add_class("hide")
-            self.screen.focus_previous()
-
-    async def action_command_mode(self) -> None:
-        self.bind(
-            "f",
-            "toggle_fuzzy_finder",
-            description="show/hide fuzzy finder",
-            show=False,
-        )
-        self.bind(
-            "escape",
-            "exit_command_mode",
-            description="exit command mode",
-            show=False,
-        )
-        self.query_one(Footer).update_text(
-            Editor.FileChanged(Editor(), value="COMMAND MODE"),
-        )
-        self.query_one(DirectoryTree).focus()
-
-    async def action_exit_command_mode(self) -> None:
-        self.bind("escape", "")
-        self.bind("f", "")
-        self.query_one(Footer).update_text(
-            Editor.FileChanged(Editor(), value=""),
-        )
-
     async def on_editor_file_changed(self, message: Message) -> None:
         self.query_one(Footer).update_text(message)
 
@@ -152,8 +149,7 @@ class BaseLayer(Static):
 
     def get_git_diff_lines(self) -> None:
         cmd = ["bash", "./mako/diff_script.sh"]
-        result = subprocess.run(cmd, capture_output=True)
-        result = result.stdout.decode()
+        result, _ = call_command(cmd)
         diff_lines = {}
         for line in result.split("\n"):
             line_parts = line.split(":|:")
@@ -174,7 +170,15 @@ class Mako(App):
     CSS_PATH = "app.css"
     BINDINGS = [
         ("ctrl+c", "", ""),
-        ("ctrl+q", "quit", "Exit Mako"),
+        # ("ctrl+q", "quit", "exit mako"),
+        # (
+        #     "ctrl+space",  # this is actually ctrl+space for some reason
+        #     "command_mode",
+        #     "go into command mode",
+        # ),
+        # ("escape", "exit_command_mode", "exit command mode"),
+        # ("ctrl+left", "move_to_left_widget", "move to the widget on the left"),
+        # ("ctrl+right", "move_to_right_widget", "move to the widget on the right"),
     ]
 
     def __init__(
@@ -187,23 +191,41 @@ class Mako(App):
         self.config = config
         self.logger = mako_logger
         self.git_working_changes = defaultdict(list)
+        assign_keybinds(self, "global_keys")
 
     def compose(self) -> ComposeResult:
         yield BaseLayer(id="base_layer")
         yield TerminalLayer(id="terminal_layer", classes="hide")
         yield FuzzyFinderLayer(id="fuzzy_finder_layer", classes="hide")
+        yield CommandModeLayer(id="command_mode_layer", classes="hide")
 
-    async def on_terminal_emulator_hide_me(self, _: Message) -> None:
-        await self.get_child_by_id("base_layer").action_toggle_term()
+    async def action_command_mode(self) -> None:
+        self.get_child_by_id("base_layer").query_one(Footer).update_text(
+            Editor.FileChanged(Editor(), value="COMMAND MODE"),
+        )
+        self.get_child_by_id("command_mode_layer").remove_class("hide")
+        self.get_child_by_id("command_mode_layer").focus()
+
+    async def action_exit_command_mode(self) -> None:
+        self.get_child_by_id("command_mode_layer").add_class("hide")
+        self.get_child_by_id("base_layer").query_one(Footer).update_text(
+            Editor.FileChanged(Editor(), value=""),
+        )
+
+    async def action_move_to_left_widget(self) -> None:
+        self.screen.focus_previous()
+
+    async def action_move_to_right_widget(self) -> None:
+        self.screen.focus_next()
 
     def debg(self, msg: str) -> None:
         self.logger.debug(msg)
 
 
 if __name__ == "__main__":
-    args = sys.argv
-    if len(args) > 1:
-        directory = Path(args[1])
+    cmd_args = sys.argv
+    if len(cmd_args) > 1:
+        directory = Path(cmd_args[1])
         if directory.is_dir():
             os.chdir(directory)
     app = Mako()

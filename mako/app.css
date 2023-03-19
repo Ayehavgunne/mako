@@ -1,5 +1,5 @@
 Screen {
-    layers: below above;
+    layers: one two three;
 }
 
 BaseLayer {
@@ -10,7 +10,7 @@ BaseLayer {
     grid-rows: 1fr;
     grid-columns: 1fr 3fr;
     grid-gutter: 1;
-    layer: below;
+    layer: one;
 }
 
 #dir_tree {
@@ -35,17 +35,26 @@ BaseLayer {
 }
 
 TerminalLayer {
-    layer: above;
+    layer: two;
     width: 60%;
     height: 60%;
     offset: 40% 40%;
 }
 
 FuzzyFinderLayer {
-    layer: above;
+    layer: two;
     width: 80%;
     height: 80%;
     offset: 10% 10%;
+}
+
+CommandModeLayer {
+    layer: three;
+    width: 100%;
+    height: 20;
+    dock: bottom;
+    offset-y: -1;
+    border: round white;
 }
 
 .hide {

@@ -95,14 +95,14 @@ class CustomSyntax(Syntax):
             padding=padding,
         )
 
-    def _get_syntax(
+    def _get_syntax(  # noqa: PLR0912, PLR0915
         self,
         console: Console,
         options: ConsoleOptions,
     ) -> Iterable[Segment]:
         """
         Get the Segments for the Syntax object, excluding any vertical/horizontal padding
-        """
+        """  # noqa: E501
         transparent_background = self._get_base_style().transparent_background
         code_width = (
             (
@@ -170,7 +170,7 @@ class CustomSyntax(Syntax):
                 if col_start > len(line):
                     line_section = Text("")
                 else:
-                    if col_end is None:
+                    if col_end is None:  # noqa: PLR5501
                         line_section = line[col_start:]
                     else:
                         line_section = line[col_start:col_end]
@@ -195,7 +195,7 @@ class CustomSyntax(Syntax):
         render_options = options.update(width=code_width)
 
         highlight_line = self.highlight_lines.__contains__
-        _Segment = Segment
+        _Segment = Segment  # noqa: N806
         new_line = _Segment("\n")
 
         line_pointer = "> " if options.legacy_windows else "❱ "
